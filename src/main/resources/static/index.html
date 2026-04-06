@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      color: #fff;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 28px;
+      letter-spacing: 1px;
+      color: #e0e0ff;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    .search-bar input::placeholder {
+      color: rgba(255,255,255,0.45);
+    }
+
+    .search-bar input:focus {
+      border-color: #a78bfa;
+    }
+
+    .search-bar button {
+      padding: 12px 22px;
+      border-radius: 50px;
+      border: none;
+      background: #a78bfa;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+    }
+
+    .search-bar button:hover {
+      background: #7c3aed;
+    }
+
+    .search-bar button:active {
+      transform: scale(0.97);
+    }
+
+    .weather-result {
+      display: none;
+    }
+
+    .city-name {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .country {
+      text-align: center;
+      font-size: 1rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 16px;
+    }
+
+    .condition {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #c4b5fd;
+      text-transform: capitalize;
+      margin-bottom: 24px;
+    }
+
+    .temp-display {
+      text-align: center;
+      font-size: 5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .feels-like {
+      text-align: center;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.9rem;
+      margin-bottom: 28px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 24px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .stat-box {
+      background: rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #e0e0ff;
+    }
+
+    .error-msg {
+      display: none;
+      text-align: center;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.95rem;
+    }
+
+    .loader {
+      display: none;
+      text-align: center;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.95rem;
+      padding: 10px 0;
+    }
+
+    .min-max {
+      text-align: center;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Weather App</h1>
+
+    <div class="search-bar">
+      <input type="text" id="cityInput" placeholder="Enter city name..." />
+      <button onclick="fetchWeather()">Search</button>
+    </div>
+
+    <div class="loader" id="loader">Fetching weather...</div>
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="weather-result" id="weatherResult">
+      <div class="city-name" id="cityName"></div>
+      <div class="country" id="country"></div>
+      <div class="condition" id="condition"></div>
+      <div class="temp-display" id="temperature"></div>
+      <div class="feels-like" id="feelsLike"></div>
+      <div class="min-max" id="minMax"></div>
+      <hr class="divider"/>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Humidity</div>
+          <div class="stat-value" id="humidity"></div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Wind Speed</div>
+          <div class="stat-value" id="windSpeed"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cityInput = document.getElementById('cityInput');
+
+    cityInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') fetchWeather();
+    });
+
+    async function fetchWeather() {
+      const city = cityInput.value.trim();
+      if (!city) return;
+
+      const loader = document.getElementById('loader');
+      const errorMsg = document.getElementById('errorMsg');
+      const result = document.getElementById('weatherResult');
+
+      loader.style.display = 'block';
+      errorMsg.style.display = 'none';
+      result.style.display = 'none';
+
+      try {
+        const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Something went wrong');
+        }
+
+        document.getElementById('cityName').textContent = data.city;
+        document.getElementById('country').textContent = data.country;
+        document.getElementById('condition').textContent = data.description;
+        document.getElementById('temperature').textContent = `${Math.round(data.temperature)}°C`;
+        document.getElementById('feelsLike').textContent = `Feels like ${Math.round(data.feelsLike)}°C`;
+        document.getElementById('minMax').textContent = `↓ ${Math.round(data.tempMin)}°C  /  ↑ ${Math.round(data.tempMax)}°C`;
+        document.getElementById('humidity').textContent = `${data.humidity}%`;
+        document.getElementById('windSpeed').textContent = `${data.windSpeed} m/s`;
+
+        result.style.display = 'block';
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = 'block';
+      } finally {
+        loader.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
