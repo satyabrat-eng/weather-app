@@ -10,6 +10,7 @@ target/
 
 # Secrets — never commit real config
 src/main/resources/application.properties
+k8s/secret.yaml
 
 # OS
 .DS_Store
